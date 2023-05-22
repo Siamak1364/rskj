@@ -250,22 +250,17 @@ public class RskContext implements NodeContext, NodeBootstrapper {
     private PeerScoringReporterService peerScoringReporterService;
     private TxQuotaChecker txQuotaChecker;
     private GasPriceTracker gasPriceTracker;
-    private BlockChainFlusher blockChainFlusher;
-
     private volatile boolean closed;
-
-
-    private final RskCli rskCli;
-
 
     /***** Constructors ***********************************************************************************************/
 
     public RskContext(RskCli rskCli) {
         this(rskCli, rskCli.getCliArgs());
     }
-
+    // ok, i got rid of rskCli field as its not used,
+    // but maybe there's no need to pass in rskCli and just pass the cliArgs.
     private RskContext(RskCli rskCli, CliArgs<NodeCliOptions, NodeCliFlags> cliArgs) {
-        this.rskCli = Objects.requireNonNull(rskCli, "RskjCli must not be null");
+        Objects.requireNonNull(rskCli, "RskjCli must not be null");
         this.cliArgs = cliArgs;
         initializeNativeLibs();
     }
@@ -637,9 +632,7 @@ public class RskContext implements NodeContext, NodeBootstrapper {
                     .orElse(new ArrayList<>())
                     .contains("*");
 
-            boolean isWalletEnabled = rskSystemProperties != null && rskSystemProperties.isWalletEnabled();
-
-            if (acceptAnyHost && isWalletEnabled) {
+            if (acceptAnyHost && rskSystemProperties != null && rskSystemProperties.isWalletEnabled()) {
                 logger.warn("It is not recommended to bypass hosts checks, by setting '*' in" +
                         " the host list, and have wallet enabled both together." +
                         " If you bypass hosts check we suggest to have wallet disabled, the same thing" +
@@ -867,28 +860,10 @@ public class RskContext implements NodeContext, NodeBootstrapper {
                     getBlockchain(),
                     getBlockStore(),
                     getReceiptStore(),
-                    getWeb3InformationRetriever(),
-                    getBlockChainFlusher());
+                    getWeb3InformationRetriever());
         }
 
         return rskModule;
-    }
-
-    public synchronized BlockChainFlusher getBlockChainFlusher() {
-        checkIfNotClosed();
-
-        if (this.blockChainFlusher == null) {
-            this.blockChainFlusher = new BlockChainFlusher(
-                    getRskSystemProperties().flushNumberOfBlocks(),
-                    getCompositeEthereumListener(),
-                    getTrieStore(),
-                    getBlockStore(),
-                    getReceiptStore(),
-                    getBlocksBloomStore(),
-                    getStateRootsStore());
-        }
-
-        return blockChainFlusher;
     }
 
     public synchronized NetworkStateExporter getNetworkStateExporter() {
@@ -1041,8 +1016,14 @@ public class RskContext implements NodeContext, NodeBootstrapper {
             internalServices.add(getPeerScoringReporterService());
         }
 
-
-        internalServices.add(getBlockChainFlusher());
+        internalServices.add(new BlockChainFlusher(
+                getRskSystemProperties().flushNumberOfBlocks(),
+                getCompositeEthereumListener(),
+                getTrieStore(),
+                getBlockStore(),
+                getReceiptStore(),
+                getBlocksBloomStore(),
+                getStateRootsStore()));
 
         internalServices.add(getExecutionBlockRetriever());
 
