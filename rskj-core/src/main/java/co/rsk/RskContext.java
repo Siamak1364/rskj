@@ -257,8 +257,7 @@ public class RskContext implements NodeContext, NodeBootstrapper {
     public RskContext(RskCli rskCli) {
         this(rskCli, rskCli.getCliArgs());
     }
-    // ok, i got rid of rskCli field as its not used,
-    // but maybe there's no need to pass in rskCli and just pass the cliArgs.
+
     private RskContext(RskCli rskCli, CliArgs<NodeCliOptions, NodeCliFlags> cliArgs) {
         Objects.requireNonNull(rskCli, "RskjCli must not be null");
         this.cliArgs = cliArgs;
