@@ -283,6 +283,33 @@ class P2shErpFederationTest {
         }
     }
 
+    private static class FedUtxo {
+        private final BtcTransaction btcTransaction;
+        private final int outputIdx;
+
+        public static FedUtxo of(NetworkParameters networkParameters, String rawTxHex, int outputIdx){
+            BtcTransaction utxo = new BtcTransaction(networkParameters, Hex.decode(rawTxHex));
+            return new FedUtxo(utxo, outputIdx);
+        }
+
+        public static FedUtxo of(BtcTransaction utxo, int outputIdx){
+            return new FedUtxo(utxo, outputIdx);
+        }
+
+        public FedUtxo(BtcTransaction btcTransaction, int outputIdx) {
+            this.btcTransaction = btcTransaction;
+            this.outputIdx = outputIdx;
+        }
+
+        public BtcTransaction getBtcTransaction() {
+            return btcTransaction;
+        }
+
+        public int getOutputIdx() {
+            return outputIdx;
+        }
+    }
+
     @Test
     void testGetSignatures() {
         int[] items = {1, 2, 3};
@@ -345,11 +372,21 @@ class P2shErpFederationTest {
 
         assertEquals(expectedAddress, fed.getAddress());
 
-        String RAW_FUND_TX = "0200000002bdf6c06aa8a61425ba6ff7003807202a29a21d37619ddf3554fb81007343ce3f01000000fd6f0100483045022100bb5e24cbf26f9b5b6c607f6fec4cedb63055c9618d0d58bb180316bad066214a02203f9f005ed91723748a375d08a2cd68a40774894e888dab39adccc34eb869c3dd0147304402207f30e81aa72f02788089f70da42056463b9c2e690c77bbce8925361dff204b080220434649b59902372e30bc70d5e98f4bc7448936d0eb260a764ac4cb745f858fbf01004cda64522103462ab7041341dadd996dc12ef0c118ca8ccb546498cbf304f7ffe0f1b12f9a9e210362634ab57dae9cb373a5d536e66a8c4f67468bbcfb063809bab643072d78a1242103c5946b3fbae03a654237da863c9ed534e0878657175b132b8ca630f245df04db53ae6702d002b2755221029cecea902067992d52c38b28bf0bb2345bda9b21eca76b16a17c477a64e433012103284178e5fbcc63c54c3b38e3ef88adf2da6c526313650041b0ef955763634ebd2103b9fc46657cf72a1afa007ecf431de1cd27ff5cc8829fa625b66ca47b967e6b2453ae68ffffffffe6d80a4238753055e3504b3a687b412190619bab29c3005e34e0250f011d304f00000000fd6f0100483045022100fa66060405eab35ade02e481559657d2529f456510ee62005f9c9d2408655795022077fe7e3aff0488aa11509988e3c2d6330d3b75962c2531a2e13741746cd030f4014730440220399af21abd6bdb013eda0b99f3c702794249482c478cf664755a1fb1c1b3a392022075e146ab91d070993f4b63d67f58970baa425d18a9f2b413d731307e5888f66c01004cda64522103462ab7041341dadd996dc12ef0c118ca8ccb546498cbf304f7ffe0f1b12f9a9e210362634ab57dae9cb373a5d536e66a8c4f67468bbcfb063809bab643072d78a1242103c5946b3fbae03a654237da863c9ed534e0878657175b132b8ca630f245df04db53ae6702d002b2755221029cecea902067992d52c38b28bf0bb2345bda9b21eca76b16a17c477a64e433012103284178e5fbcc63c54c3b38e3ef88adf2da6c526313650041b0ef955763634ebd2103b9fc46657cf72a1afa007ecf431de1cd27ff5cc8829fa625b66ca47b967e6b2453ae68ffffffff024e070700000000001976a914cab5925c59a9a413f8d443000abcc5640bdf067588ac836408000000000017a914eaf58ece160a383630667cfc1ccff519ab07c4728700000000";
-        BtcTransaction pegInTx = new BtcTransaction(bridgeConstants.getBtcParams(), Hex.decode(RAW_FUND_TX));
-        int outputIndex = 1; // Remember to change this value accordingly in case of using an existing raw tx
+        String RAW_FUND_TX = "0200000000010134ed7734da14ecde305347153f70be45021e8e29137205a9899630f56c68d3890100000000fdffffff02891300000000000017a914eaf58ece160a383630667cfc1ccff519ab07c472873c3e020000000000160014f885b26136ad4d61247132271795cc29ae9cec0302473044022063986423838cdd2abc51b150f11a1c399dce53f68f1bd02e4ec793db2fa3485c022007d8909a83b01c57dcee7e55f3989af949756c6b5068948b888622d2e6673ed70121028f117bfbc90d934b73d0d55afe54ee33a288cdde572bd3d006cede67f4c797a2e7262500";
+        FedUtxo utxo1 = FedUtxo.of(new BtcTransaction(bridgeConstants.getBtcParams(), Hex.decode(RAW_FUND_TX)), 0);
 
-        Address destinationAddress = Address.fromBase58(bridgeConstants.getBtcParams(), "2NEfaGq4tGe6bJUxLEzGFoVyZrSrZtXRzJ7");
+        String RAW_FUND_TX2 = "020000000001013a43f0d972f5045b443c9c071bd2254f91d5b14d0b5ab5cdeab014c0ff2cc17f0200000000fdffffff027d6408000000000017a914eaf58ece160a383630667cfc1ccff519ab07c472870555dc0500000000220020617a81e635a62aa61d20fd4be369d285da2750c871016282c05a29181552d52b0400473044022048386d4e0270b68a17d3ea10d8c569c2150cb46416c82b3289f2e0ec1fe0272a02204f077bdc8f71d824a4a8a447708cb974e21c015021b94f8226a3da955024371e0147304402204fda66a5cc3503acd325671216f5dbfe4d329499321af508c4959e89072dc47802204531cb9a52c80ede1cab8ca40324ef18ddfb589a0b76f741764334f6f1e9570f014752210203307a637032952b21371f966838e03a768220f8bb663cbc2aa6d41dc71f6bbf2103fdadd0c267fc7a4890c37c6730ca124d53ad7001ee6d9ad00ed50b52a46d784552aee7262500";
+        FedUtxo utxo2 = FedUtxo.of(new BtcTransaction(bridgeConstants.getBtcParams(), Hex.decode(RAW_FUND_TX2)), 0);
+
+        String RAW_FUND_TX3 = "020000000001016a040fa1ec01bac865d4802083a435fef32052091d6d7bd02cc784d00d75e8400100000000fdffffff02916408000000000017a914eaf58ece160a383630667cfc1ccff519ab07c47287beefd305000000002200201ca17d3f37320ac4469faa1119824d98bbec3b1a586174901834d2b842715e7c0400473044022044033baafc0c15c8e2c3128d01f29a7c7c5c6ec790ead8c5be2610efb0e9d581022014b605cb59a5254a189a9fcd35ec94e6f4faae18f7011a41ac7663df33fbfdc50147304402206fc734a5db737ecb37056491881da15c2f8f2ca2bb9e47db7396029b9a0ad5e102206cae6f8766679c666cfa256e886e2816882623167e92fd9e272fd9712aa49d9a0147522102b9bb9ea5c5c0a56421bc7720e81e7f3e5fb9dfcbca946f01d868940efaa5da18210309eb318fe76a6b139d70e4037dd87733ced9e3ed6f851301a88938c7033d473b52ae05272500";
+        FedUtxo utxo3 = FedUtxo.of(new BtcTransaction(bridgeConstants.getBtcParams(), Hex.decode(RAW_FUND_TX3)), 0);
+
+        String RAW_FUND_TX4 = "0200000001a223ad7e9d4f5067a8fdddf9e4137af49d5a6dad7ea952533f701061fefd010f020000006a473044022003d999e14be1e2ea15cb16df81e14b30f26c684bcbf6fcbd07975d8648e5f04402207e99a414a0ebf1c3617944610de5ea002439a1ac56e667a60c095184c2419559012102c6bf1e099ec95510a8da3d1c67026cb65a019bad57dc2255dd56a426c629327bfdffffff0300000000000000001b6a1952534b540162db6c4b118d7259c23692b162829e6bd5e4d5b0891300000000000017a914eaf58ece160a383630667cfc1ccff519ab07c4728791200000000000001976a9145952b24450e80668e069b8152a3a38ea7f6ad44c88ace7262500";
+        FedUtxo utxo4 = FedUtxo.of(new BtcTransaction(bridgeConstants.getBtcParams(), Hex.decode(RAW_FUND_TX4)), 1);
+
+        List<FedUtxo> utxos = Arrays.asList(utxo1, utxo2, utxo3, utxo4);
+
+        Address destinationAddress = Address.fromBase58(bridgeConstants.getBtcParams(), "2MtYSUzFWEQV62r92bsGX8ewE5Mgpv4xn9M");
 
         spendFromFed(
             bridgeConstants,
@@ -357,8 +394,9 @@ class P2shErpFederationTest {
             fed,
             fedMembers,
             false,
-            pegInTx,
-            outputIndex,
+            utxos,
+            //Coin.valueOf(1_109_748L-550_013L),
+            Coin.valueOf(1_107_748L),
             destinationAddress
         );
     }
@@ -369,39 +407,42 @@ class P2shErpFederationTest {
         Federation fed,
         List<FedMemberWithSK> signers,
         boolean signWithEmergencyMultisig,
-        BtcTransaction pegInTx,
-        int outputIndex,
+        List<FedUtxo> utxos,
+        Coin amount,
         Address destinationAddress
     ) {
         NetworkParameters networkParameters = bridgeConstants.getBtcParams();
 
         BtcTransaction pegOutTx = new BtcTransaction(networkParameters);
-        pegOutTx.addInput(pegInTx.getOutput(outputIndex));
-        pegOutTx.addOutput(pegInTx.getOutput(outputIndex).getValue().minus(Coin.valueOf(1_000L)), destinationAddress);
+        for (FedUtxo utxo: utxos) {
+            pegOutTx.addInput(utxo.btcTransaction.getOutput(utxo.outputIdx));
+        }
+        pegOutTx.addOutput(amount, destinationAddress);
         pegOutTx.setVersion(2);
         if (signWithEmergencyMultisig){
             pegOutTx.getInput(0).setSequenceNumber(activationDelay);
         }
-        //
 
-        // Create signatures
-        Sha256Hash sigHash = pegOutTx.hashForSignature(
-            0,
-            fed.getRedeemScript(),
-            BtcTransaction.SigHash.ALL,
-            false
-        );
+        for (int i = 0; i < utxos.size(); i++) {
+            // Create signatures
+            Sha256Hash sigHash = pegOutTx.hashForSignature(
+                i,
+                fed.getRedeemScript(),
+                BtcTransaction.SigHash.ALL,
+                false
+            );
 
-        List<BtcECKey.ECDSASignature> signatures = signers.stream().map(FedMemberWithSK::getFedPrivKey).map(privateKey -> privateKey.sign(sigHash)).collect(Collectors.toList());
+            List<BtcECKey.ECDSASignature> signatures = signers.stream().map(FedMemberWithSK::getFedPrivKey).map(privateKey -> privateKey.sign(sigHash)).collect(Collectors.toList());
+            String[] permutations = getSignaturesPermutations(0, 1, signatures.size() / 2 + 1, signatures.size()).split("\n");
+            for (String permutation: permutations) {
+                String[] idxs = permutation.split(",");
+                List<BtcECKey.ECDSASignature> sub = Arrays.stream(idxs).mapToInt(Integer::parseInt).mapToObj(signatures::get).collect(Collectors.toList());
 
-        String[] permutations = getSignaturesPermutations(0, 1, signatures.size() / 2 + 1, signatures.size()).split("\n");
-        for (String permutation: permutations) {
-            String[] idxs = permutation.split(",");
-            List<BtcECKey.ECDSASignature> sub = Arrays.stream(idxs).mapToInt(Integer::parseInt).mapToObj(signatures::get).collect(Collectors.toList());
-
-            Script inputScript = createInputScript(fed, sub, signWithEmergencyMultisig);
-            pegOutTx.getInput(0).setScriptSig(inputScript);
-            inputScript.correctlySpends(pegOutTx,0, pegInTx.getOutput(outputIndex).getScriptPubKey());
+                Script inputScript = createInputScript(fed, sub, signWithEmergencyMultisig);
+                FedUtxo utxo = utxos.get(i);
+                pegOutTx.getInput(i).setScriptSig(inputScript);
+                inputScript.correctlySpends(pegOutTx, i, utxo.getBtcTransaction().getOutput(utxo.outputIdx).getScriptPubKey());
+            }
         }
 
         // Uncomment to print the raw tx in console and broadcast https://blockstream.info/testnet/tx/push
