@@ -1229,7 +1229,8 @@ public class RskContext implements NodeContext, NodeBootstrapper {
         }
     }
 
-    public boolean isVersionOrHelpRequested() {
+    public synchronized boolean isVersionOrHelpRequested() {
+        checkIfNotClosed();
         return versionOrHelpRequested;
     }
 
