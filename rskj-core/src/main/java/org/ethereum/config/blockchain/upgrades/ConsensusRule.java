@@ -85,6 +85,7 @@ public enum ConsensusRule {
     RSKIP377("rskip377"),
     RSKIP383("rskip383"),
     RSKIP385("rskip385"),
+    RSKIPXXX("rskipXXX"), // From EIP-2028 calldata gas reduction
     ;
 
     private String configKey;
