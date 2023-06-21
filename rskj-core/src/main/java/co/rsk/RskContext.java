@@ -251,14 +251,12 @@ public class RskContext implements NodeContext, NodeBootstrapper {
     private TxQuotaChecker txQuotaChecker;
     private GasPriceTracker gasPriceTracker;
     private volatile boolean closed;
-    private boolean versionOrHelpRequested;
 
     /***** Constructors ***********************************************************************************************/
     public RskContext(String[] args) {
         RskCli rskCli = new RskCli();
         rskCli.load(args);
         initialize(rskCli, rskCli.getCliArgs());
-        this.versionOrHelpRequested = rskCli.isVersionOrHelpRequested();
     }
 
     private void initialize(RskCli rskCli, CliArgs<NodeCliOptions, NodeCliFlags> cliArgs) {
@@ -1227,11 +1225,6 @@ public class RskContext implements NodeContext, NodeBootstrapper {
             wallet.close();
             logger.trace("wallet closed.");
         }
-    }
-
-    public synchronized boolean isVersionOrHelpRequested() {
-        checkIfNotClosed();
-        return versionOrHelpRequested;
     }
 
     /***** Protected Methods ******************************************************************************************/
