@@ -184,57 +184,18 @@ class BridgeStorageProviderBridgeTxsIndexTests {
             BRIDGE_BTC_TX_SIG_HASH_KEY.getCompoundKey("-", sigHash.toString())
         );
         Mockito.reset(repository);
+
+        // Let's create a stub for the just saved sigHash
         when(repository.getStorageBytes(PrecompiledContracts.BRIDGE_ADDR, BRIDGE_BTC_TX_SIG_HASH_KEY.getCompoundKey("-", sigHash.toString())))
             .thenReturn(new byte[]{TRUE_VALUE});
 
-        // Check if sigHash exists
+        // Check if saved sigHash exists
         boolean shouldFoundSigHash = provider.hasBridgeBtcTxSigHash(sigHash);
         Assertions.assertTrue(shouldFoundSigHash);
         verify(repository, times(1)).getStorageBytes(
             PrecompiledContracts.BRIDGE_ADDR,
             BRIDGE_BTC_TX_SIG_HASH_KEY.getCompoundKey("-", sigHash.toString())
         );
-
-        // Create a new bridge storage provider instance to pretend the node is processing a brand-new transaction
-        provider = new BridgeStorageProvider(
-            repository,
-            PrecompiledContracts.BRIDGE_ADDR,
-            bridgeConstantsRegtest,
-            activations
-        );
-
-        // Let's check nothing is persisted when calling save and there is not pending sigHash to save
-        provider.save();
-        verify(repository, never()).addStorageBytes(
-            any(),
-            any(),
-            any()
-        );
-        Mockito.reset(repository);
-
-        // Try to set a new sigHash that no exists in the index.
-        Sha256Hash newSigHash = PegTestUtils.createHash(7);
-        provider.setBridgeBtcTxSigHash(newSigHash);
-
-        // Verify the new sigHash is not persisted into the index when save has not been called.
-        verify(repository, never()).addStorageBytes(
-            any(),
-            any(),
-            any()
-        );
-
-        // Persist pending to save sighHash
-        provider.save();
-        verify(repository, times(1)).addStorageBytes(
-            PrecompiledContracts.BRIDGE_ADDR,
-            BRIDGE_BTC_TX_SIG_HASH_KEY.getCompoundKey("-", newSigHash.toString()),
-            new byte[]{(byte)1}
-        );
-        when(repository.getStorageBytes(PrecompiledContracts.BRIDGE_ADDR, BRIDGE_BTC_TX_SIG_HASH_KEY.getCompoundKey("-", newSigHash.toString())))
-            .thenReturn(new byte[]{TRUE_VALUE});
-
-        boolean shouldFoundNewSigHash = provider.hasBridgeBtcTxSigHash(newSigHash);
-        Assertions.assertTrue(shouldFoundNewSigHash);
     }
 
     @ParameterizedTest
@@ -331,7 +292,7 @@ class BridgeStorageProviderBridgeTxsIndexTests {
             activations
         );
 
-        // Adding a sigHash when index is empty
+        // Add a sigHash when index is empty
         provider.setBridgeBtcTxSigHash(sigHash);
 
         // Verify the method check if the given sigHash already exists in the index
@@ -362,7 +323,7 @@ class BridgeStorageProviderBridgeTxsIndexTests {
             PrecompiledContracts.BRIDGE_ADDR,
             BRIDGE_BTC_TX_SIG_HASH_KEY.getCompoundKey("-", newSigHash.toString())
         );
-        // Verify the new sigHash is not persisted yet
+        // Verify no sigHash is persisted yet
         verify(repository, never()).addStorageBytes(
             any(),
             any(),
@@ -370,7 +331,7 @@ class BridgeStorageProviderBridgeTxsIndexTests {
         );
         Mockito.reset(repository);
 
-        // Now let's persist the pending to save sighash
+        // Now let's persist the pending to save sigHash
         provider.save();
 
         // Check the persisted sigHash is the newSigHash
