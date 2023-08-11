@@ -58,11 +58,4 @@ public class RskJsonRpcRequestException extends RuntimeException {
         return new RskJsonRpcRequestException(-32600, message);
     }
 
-    public static RskJsonRpcRequestException unknownBLockException(){
-        return new RskJsonRpcRequestException(-39001, "Unknown block");
-    }
-
-    public static RskJsonRpcRequestException headerNotFound(){
-        return new RskJsonRpcRequestException(-32000, "Header not found");
-    }
 }
