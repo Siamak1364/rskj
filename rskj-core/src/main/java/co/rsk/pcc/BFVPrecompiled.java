@@ -1,10 +1,13 @@
 package co.rsk.pcc;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.NotImplementedException;
 import org.ethereum.vm.PrecompiledContracts;
 import org.ethereum.vm.exception.VMException;
 import org.rsksmart.BFV;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 // todo(fedejinich) refactor duplicated code in add and sub
@@ -126,6 +129,15 @@ public class BFVPrecompiled extends PrecompiledContracts.PrecompiledContract {
                 ByteBuffer buffer = ByteBuffer.wrap(data);
                 buffer.position(0);
 
+//                SimpleHHECase sCase;
+//                try {
+//                     sCase = new ObjectMapper().readValue(new File(
+//                                    "src/test/java/org/ethereum/vm/bfv/" + "test_simple_hhe" + ".json"),
+//                            SimpleHHECase.class);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+
                 int encryptedMessageLen = buffer.getInt();
                 int pastaSKLen = buffer.getInt();
                 int rkLen = buffer.getInt();
@@ -143,6 +155,9 @@ public class BFVPrecompiled extends PrecompiledContracts.PrecompiledContract {
 
                 return bfv.transcipher(encryptedMessage, encryptedMessageLen,
                         pastaSK, pastaSKLen, rk, rkLen, bfvSk, bfvSkLen);
+//                return bfv.transcipher(encryptedMessage, encryptedMessageLen,
+//                        sCase.getPastaSK(), sCase.getPastaSK().length, sCase.getRelinearizationKey(),
+//                        sCase.getRelinearizationKey().length, sCase.getBfvSK(), sCase.getBfvSK().length);
             }
         };
 
